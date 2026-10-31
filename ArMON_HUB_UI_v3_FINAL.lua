@@ -838,7 +838,7 @@ local function BuildArMONLibrary()
             BorderSizePixel = 0,
             GroupTransparency = 0,
         }, { BackgroundColor3 = "Window" })
-        corner(window, 22)
+        corner(window, 12)
         stroke(window, "Primary", 1, 0.7)
 
         -- glow สีฟ้าอ่อนๆ มุมซ้ายบน ให้หน้าต่างดูมีมิติ ไม่แบน
@@ -851,6 +851,10 @@ local function BuildArMONLibrary()
             BackgroundTransparency = 0.9,
         })
         gradient(glow, "Primary", "Window", 125)
+        if UIS.TouchEnabled and not UIS.KeyboardEnabled then
+            shadow.Visible = false
+            glow.Visible = false
+        end
 
         ---------------- Header ----------------
         local header = create("Frame", {
@@ -878,7 +882,7 @@ local function BuildArMONLibrary()
             BorderSizePixel = 0,
             BackgroundColor3 = Color3.new(1, 1, 1),
         })
-        corner(logoBox, 15)
+        corner(logoBox, 9)
         gradient(logoBox, "Primary", "Accent", 45)
         if tostring(logo):find("rbxassetid") or tostring(logo):find("http") then
             create("ImageLabel", {
@@ -939,7 +943,7 @@ local function BuildArMONLibrary()
                 TextSize = 16,
                 BackgroundTransparency = 0.35,
             }, { BackgroundColor3 = "Surface", TextColor3 = "Text" })
-            corner(button, 14)
+            corner(button, 8)
             connect(button.MouseEnter, function()
                 setThemeKey(button, "BackgroundColor3", hoverKey, 0.12)
             end)
@@ -983,7 +987,7 @@ local function BuildArMONLibrary()
             BorderSizePixel = 0,
             BackgroundTransparency = 0.15,
         }, { BackgroundColor3 = "Sidebar" })
-        corner(sideCard, 18)
+        corner(sideCard, 12)
         stroke(sideCard, "Border", 1, 0.55)
 
         local sideDivider = create("Frame", {
@@ -1051,7 +1055,7 @@ local function BuildArMONLibrary()
             BorderSizePixel = 0,
             Active = true,
         }, { BackgroundColor3 = "Surface" })
-        corner(floatBtn, 25)
+        corner(floatBtn, 14)
         local floatStroke = stroke(floatBtn, "Primary", 1.5, 0.3)
         local floatScale = create("UIScale", { Parent = floatBtn, Scale = 1 })
         if tostring(logo):find("rbxassetid") or tostring(logo):find("http") then
@@ -1171,12 +1175,10 @@ local function BuildArMONLibrary()
             connect(UIS.InputChanged, function(input)
                 if dragging and isMove(input) then
                     local delta = input.Position - dragStart
-                    tween(root, 0.07, {
-                        Position = UDim2.new(
-                            startPosition.X.Scale, startPosition.X.Offset + delta.X,
-                            startPosition.Y.Scale, startPosition.Y.Offset + delta.Y
-                        ),
-                    }, Enum.EasingStyle.Linear)
+                    root.Position = UDim2.new(
+                        startPosition.X.Scale, startPosition.X.Offset + delta.X,
+                        startPosition.Y.Scale, startPosition.Y.Offset + delta.Y
+                    )
                 end
             end)
             connect(UIS.InputEnded, function(input)
@@ -1294,7 +1296,7 @@ local function BuildArMONLibrary()
                 BackgroundTransparency = 1,
                 LayoutOrder = pageCount,
             }, { BackgroundColor3 = "Primary" })
-            corner(tab, 18)
+            corner(tab, 10)
 
             local indicator = create("Frame", {
                 Parent = tab,
@@ -1426,7 +1428,7 @@ local function BuildArMONLibrary()
                     BorderSizePixel = 0,
                     LayoutOrder = #Page.Sections + 1,
                 }, { BackgroundColor3 = "SurfaceSoft" })
-                corner(sectionFrame, 18)
+                corner(sectionFrame, 12)
                 stroke(sectionFrame, "Border", 1, 0.6)
                 padding(sectionFrame, 12, 12, 6, 12)
                 listLayout(sectionFrame, 6)
@@ -1609,7 +1611,7 @@ local function BuildArMONLibrary()
             ClipsDescendants = true,
             LayoutOrder = nextOrder(ctx),
         }, { BackgroundColor3 = o.baseKey or "Surface" })
-        U.corner(row, 14)
+        U.corner(row, 10)
         U.stroke(row, "Border", 1, 0.6)
 
         local textFrame = U.create("Frame", {
@@ -1802,7 +1804,7 @@ local function BuildArMONLibrary()
             BorderSizePixel = 0,
             LayoutOrder = nextOrder(ctx),
         }, { BackgroundColor3 = "Surface" })
-        U.corner(row, 14)
+        U.corner(row, 10)
         U.stroke(row, "Border", 1, 0.65)
 
         local textObject = U.create("TextLabel", {
@@ -1868,7 +1870,7 @@ local function BuildArMONLibrary()
             TextXAlignment = Enum.TextXAlignment.Left,
             TextTruncate = Enum.TextTruncate.AtEnd,
         }, { BackgroundColor3 = "Background", TextColor3 = "Text", PlaceholderColor3 = "Muted" })
-        U.corner(input, 12)
+        U.corner(input, 8)
         U.padding(input, 10, 10, 0, 0)
         local inputStroke = U.stroke(input, "Border", 1, 0.3)
 
@@ -1943,7 +1945,7 @@ local function BuildArMONLibrary()
             TextSize = 11,
             AutoButtonColor = false,
         }, { BackgroundColor3 = "Background", TextColor3 = "Accent" })
-        U.corner(keyButton, 12)
+        U.corner(keyButton, 8)
         local keyStroke = U.stroke(keyButton, "Border", 1, 0.3)
 
         local listening = false
@@ -2021,7 +2023,7 @@ local function BuildArMONLibrary()
             BorderSizePixel = 0,
             LayoutOrder = nextOrder(ctx),
         }, { BackgroundColor3 = "Surface" })
-        U.corner(row, 14)
+        U.corner(row, 10)
         U.stroke(row, "Border", 1, 0.6)
         local content = U.create("Frame", {
             Parent = row,
@@ -2504,7 +2506,7 @@ local function BuildArMONLibrary()
             Text = "",
             AutoButtonColor = false,
         }, { BackgroundColor3 = "Background" })
-        U.corner(openButton, 12)
+        U.corner(openButton, 8)
         local buttonStroke = U.stroke(openButton, "Border", 1, 0.3)
 
         local buttonText = U.create("TextLabel", {
@@ -2593,7 +2595,7 @@ local function BuildArMONLibrary()
                         BackgroundTransparency = selected and 0.75 or 1,
                         LayoutOrder = order,
                     }, { BackgroundColor3 = "Primary" })
-                    U.corner(button, 10)
+                    U.corner(button, 8)
                     local label = U.create("TextLabel", {
                         Parent = button,
                         BackgroundTransparency = 1,
@@ -2692,7 +2694,7 @@ local function BuildArMONLibrary()
                 ClipsDescendants = true,
                 ZIndex = 51,
             }, { BackgroundColor3 = "Surface" })
-            U.corner(popup, 16)
+            U.corner(popup, 12)
             U.stroke(popup, "Primary", 1, 0.6)
 
             searchText = ""
@@ -2709,7 +2711,7 @@ local function BuildArMONLibrary()
                     TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                 }, { BackgroundColor3 = "Background", TextColor3 = "Text", PlaceholderColor3 = "Muted" })
-                U.corner(searchBox, 10)
+                U.corner(searchBox, 8)
                 U.padding(searchBox, 10, 10, 0, 0)
                 searchBox:GetPropertyChangedSignal("Text"):Connect(function()
                     searchText = searchBox.Text
@@ -2868,7 +2870,7 @@ local function BuildArMONLibrary()
             BorderSizePixel = 0,
             GroupTransparency = 1,
         }, { BackgroundColor3 = "Surface" })
-        U.corner(card, 18)
+        U.corner(card, 12)
         U.stroke(card, style.key, 1, 0.5)
 
         local body = U.create("Frame", {
@@ -3003,7 +3005,7 @@ local function BuildArMONLibrary()
             BorderSizePixel = 0,
             ZIndex = 200,
         }, { BackgroundColor3 = "Surface" })
-        U.corner(tooltipFrame, 10)
+        U.corner(tooltipFrame, 8)
         U.stroke(tooltipFrame, "Primary", 1, 0.45)
         U.padding(tooltipFrame, 10, 10, 6, 6)
         tooltipLabel = U.create("TextLabel", {
@@ -3433,7 +3435,7 @@ local function BuildArMONLibrary()
             Text = "",
             BackgroundTransparency = 0.35,
         }, { BackgroundColor3 = "Surface" })
-        U.corner(searchButton, 14)
+        U.corner(searchButton, 8)
 
         local lens = create("Frame", {
             Parent = searchButton,
@@ -3473,7 +3475,7 @@ local function BuildArMONLibrary()
             TextXAlignment = Enum.TextXAlignment.Left,
             ZIndex = 5,
         }, { BackgroundColor3 = "Background", TextColor3 = "Text", PlaceholderColor3 = "Muted" })
-        U.corner(box, 14)
+        U.corner(box, 8)
         U.padding(box, 12, 8, 0, 0)
         U.stroke(box, "Primary", 1, 0.45)
 
@@ -3580,7 +3582,7 @@ end
 
 
 local A = BuildArMONLibrary()
-Main = guardUI(A.CreateMain({ Title = "ArMON HUB", Desc = "Blue & White Edition" }), "Main")
+Main = guardUI(A.CreateMain({ Title = "ArMON HUB", Desc = "Blue & White Edition  •  v3" }), "Main")
 PageShop = Main.CreatePage({ Page_Name = "Shop", Page_Title = "Shop" })
 getgenv().Options = A.Options
 SectionShopMisc = PageShop.CreateSection("Misc Shop")
@@ -4335,7 +4337,7 @@ do
 	gui.IgnoreGuiInset = true
 	gui.DisplayOrder = 999
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	gui.Enabled = Settings[UI_KEY] ~= false
+	gui.Enabled = false
 	gui.Parent = parent
 
 	local frame = Instance.new("Frame")
@@ -4405,21 +4407,11 @@ do
 		while gui.Parent do
 			pcall(hookHop)
 			pcall(hookMovement)
-			pcall(refresh)
 			task.wait(0.3)
 		end
 	end)
 
 	-- ---------- Toggle ở đầu tab Status And Server ----------
-	local SectionStatusUI = PageStatusAndServer.CreateSection("BananaCat Status UI")
-	SectionStatusUI.CreateToggle({
-		Title = "Show BananaCat Status UI",
-		Desc = "Show what the script is doing at the top of the screen",
-		Default = Settings[UI_KEY] ~= false,
-	}, function(v)
-		SaveSettings(UI_KEY, v)
-		gui.Enabled = v
-	end)
 end
 -- ===================== end BananaCat Status UI =====================
 SectionStatus = PageStatusAndServer.CreateSection("Status")
@@ -24282,6 +24274,7 @@ x = game:GetService("RunService")
 
 -- NOCLIP chay tren Stepped (truoc physics), doc lap voi phan con lai cua script
 if not getgenv().__NOCLIP_STEPPED then
+	local _noclipChar, _noclipAt, _noclipParts = nil, 0, {}
 	getgenv().__NOCLIP_STEPPED = x.Stepped:Connect(function()
 		local char = t.Character
 		if not char then
@@ -24291,8 +24284,18 @@ if not getgenv().__NOCLIP_STEPPED then
 			return Settings.Noclip or TweenManager.currentTween or ToggleNoclip()
 		end)
 		if ok and on then
-			for _, p in ipairs(char:GetDescendants()) do
-				if p:IsA("BasePart") and p.CanCollide then
+			local now = tick()
+			if _noclipChar ~= char or now - _noclipAt > 1 then
+				_noclipChar, _noclipAt, _noclipParts = char, now, {}
+				for _, p in ipairs(char:GetDescendants()) do
+					if p:IsA("BasePart") then
+						_noclipParts[#_noclipParts + 1] = p
+					end
+				end
+			end
+			for i = 1, #_noclipParts do
+				local p = _noclipParts[i]
+				if p.CanCollide then
 					p.CanCollide = false
 				end
 			end
@@ -24347,14 +24350,7 @@ if not getgenv().BananaCatMainLoop then
 					TweenManager.CancelCurrent()
 				end
 			end
-			if ToggleNoclip() or Settings.Noclip then
-				local T, b, a = next, t.Character:GetDescendants()
-				for s, s in T, b, a do
-					if (s:IsA("MeshPart") or (s:IsA("Part"))) and s.CanCollide then
-						s.CanCollide = false
-					end
-				end
-			end
+			-- noclip ทำใน Stepped อยู่แล้ว (ตัดลูปซ้ำที่วนทุกเฟรมออก)
 		end)
 		task.spawn(function()
 			if Settings["Change WalkSpeed"] then
