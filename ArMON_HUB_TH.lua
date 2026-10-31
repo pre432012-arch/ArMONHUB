@@ -1697,8 +1697,24 @@ local function BuildArMONLibrary()
             pos = Vector2.new(input.Position.X, input.Position.Y) + inset - row.AbsolutePosition
             pos = Vector2.new(math.clamp(pos.X, 0, size.X), math.clamp(pos.Y, 0, size.Y))
         end
+        -- กรอบคลุมแถวด้วยขนาดแบบ scale + ตัดส่วนเกิน: วงกลมที่ขยายใหญ่จะไม่ดันความสูงของแถว (AutomaticSize.Y)
+        local holder = row:FindFirstChild("RippleHolder")
+        if not holder then
+            holder = U.create("Frame", {
+                Name = "RippleHolder",
+                Parent = row,
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
+                Position = UDim2.fromScale(0, 0),
+                Size = UDim2.fromScale(1, 1),
+                ClipsDescendants = true,
+                Active = false,
+                ZIndex = 2,
+            })
+            U.corner(holder, 10)
+        end
         local circle = U.create("Frame", {
-            Parent = row,
+            Parent = holder,
             AnchorPoint = Vector2.new(0.5, 0.5),
             Position = UDim2.fromOffset(pos.X, pos.Y),
             Size = UDim2.fromOffset(0, 0),
