@@ -1,0 +1,162 @@
+-- ============================================================
+-- Auto Farm Bond (Dead Rails) - รันแล้วทำงานทันที ไม่ต้องใช้เมนู
+-- - เริ่มฟาร์ม Bond อัตโนมัติ
+-- - ถ้า Bond หมด/สแกนไม่เจอ -> รีเซ็ตตัวละคร + ปฏิเสธรอบถัดไป (เริ่มเกมใหม่)
+-- ============================================================
+
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+if getgenv().AutoFarmBondRunning then
+    warn("[AutoFarmBond] Already running")
+    return
+end
+getgenv().AutoFarmBondRunning = true
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- ---------- ตั้งค่า ----------
+local CONFIG = {
+    nearbyDistance = 15,  -- ระยะที่ถือว่า bond "ใกล้" (เก็บได้เลย)
+    delay          = 0.25, -- หน่วงระหว่างรอบสแกน
+    bondDelay      = 0.1,  -- หน่วงระหว่างแต่ละ remote
+    emptyPassesToRetry = 3,  -- สแกนไม่เจอ bond กี่รอบติดถึงเริ่มใหม่
+    retryCooldown  = 15,   -- ห่างจากการเริ่มใหม่ครั้งก่อนอย่างน้อยกี่วินาที
+}
+
+local function notify(msg) print("[AutoFarmBond] " .. msg) end
+
+-- ---------- โหลดโมดูล ECS ของเกม ----------
+local function loadECS()
+    local ok, result = pcall(function()
+        local universe = ReplicatedStorage.Shared.Universe
+        return {
+            world      = require(universe.ECS.world),
+            comps      = require(universe.ECS.components),
+            replicator = require(ReplicatedStorage.Client.Universe.Replication.clientReplicator),
+            remotes    = require(universe.Remotes),
+            actionable = universe.Network.RemoteEvent.Actionable,
+        }
+    end)
+    if not ok then return nil end
+    return result
+end
+local ECS = loadECS()
+
+local function ecsGet(id, comp)
+    if not ECS then return nil end
+    local ok, v = pcall(ECS.world.get, ECS.world, id, comp)
+    return ok and v or nil
+end
+
+local function ecsMyPosition()
+    if not ECS then return nil end
+    local state = ECS.world:get_resource(ECS.comps.ClientStateResource)
+    local char = state and state.localCharacter
+    if not char then return nil end
+    local t = ecsGet(char, ECS.comps.Transform)
+    if not t then return nil end
+    return t.Position or t.p
+end
+
+local state = { emptyPasses = 0, lastRetry = 0, running = true }
+
+-- ---------- เริ่มเกมใหม่: รีเซ็ตตัวละคร + ปฏิเสธรอบถัดไป ----------
+local function retryRun()
+    pcall(function() ReplicatedStorage.Shared.Universe.Network.RemoteEvent.ResetCharacter:FireServer() end)
+    pcall(function() ReplicatedStorage.Remotes.EndDecision:FireServer(false) end)
+    notify("No bonds left, restarting run")
+end
+
+-- ---------- สแกน/เก็บ bond 1 รอบ ----------
+local function collectPass(modules)
+    local world, comps = modules.world, modules.comps
+    local cs = world:get_resource(comps.ClientStateResource)
+    local character = cs and cs.localCharacter
+    if not character then return end
+
+    if not world:has(character, comps.Sack) then
+        world:add(character, comps.Sack)
+        world:set(character, comps.Sack, { contents = {}, maxContents = 10 })
+    end
+
+    local myPos = ecsMyPosition(); if not myPos then return end
+
+    local bondNear, bondFar = {}, {}
+    local bondTotal = 0
+    local checked = 0
+
+    for id in world:query(comps.Storable, comps.ObjectId) do
+        if not state.running then return end
+        if world:get(id, comps.ObjectId) == "bond" then
+            bondTotal += 1
+            local serverEntity = modules.replicator:get_server_entity(id)
+            if serverEntity and serverEntity ~= id then
+                local t = world:get(id, comps.Transform)
+                local pos = t and (t.Position or t.p)
+                local dist = pos and (pos - myPos).Magnitude or math.huge
+                if dist <= CONFIG.nearbyDistance then
+                    table.insert(bondNear, serverEntity)
+                else
+                    table.insert(bondFar, serverEntity)
+                end
+            end
+        end
+        checked += 1
+        if checked % 20 == 0 then task.wait() end
+    end
+
+    -- ไม่เจอ bond เลย (หมด/หาไม่เจอ) -> เริ่มใหม่
+    if bondTotal == 0 then
+        state.emptyPasses += 1
+        if state.emptyPasses >= CONFIG.emptyPassesToRetry
+            and os.clock() - state.lastRetry > CONFIG.retryCooldown then
+            state.emptyPasses = 0
+            state.lastRetry = os.clock()
+            retryRun()
+            return
+        end
+    else
+        state.emptyPasses = 0
+    end
+
+    -- เก็บอันใกล้ก่อน
+    if #bondNear > 0 then
+        for _, sr in ipairs(bondNear) do
+            modules.actionable:FireServer(sr)
+            if CONFIG.bondDelay > 0 then task.wait(CONFIG.bondDelay) end
+        end
+        return
+    end
+
+    -- ไม่มีอันใกล้ -> ดึงอันไกลเข้ามาแล้วเก็บ
+    for _, sr in ipairs(bondFar) do
+        if not state.running then return end
+        modules.remotes.Store:FireServer(sr)
+        modules.remotes.Store:FireServer()
+        modules.actionable:FireServer(sr)
+        if CONFIG.bondDelay > 0 then task.wait(CONFIG.bondDelay) end
+    end
+end
+
+-- ---------- Loop หลัก (เริ่มทันที) ----------
+task.spawn(function()
+    while state.running do
+        if not ECS then ECS = loadECS() end
+        if not ECS then
+            notify("Game item modules not found, retrying...")
+            task.wait(2)
+        else
+            pcall(collectPass, ECS)
+            task.wait(CONFIG.delay)
+        end
+    end
+end)
+
+-- เรียก getgenv().StopAutoFarmBond() เพื่อหยุด
+getgenv().StopAutoFarmBond = function()
+    state.running = false
+    getgenv().AutoFarmBondRunning = false
+    notify("Stopped")
+end
+
+notify("Started")
